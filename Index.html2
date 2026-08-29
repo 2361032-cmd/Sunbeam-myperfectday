@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Perfect Day</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      transition: background 0.8s ease;
+      background: #89c2ee;
+    }
+
+    #app {
+      width: 100%;
+      max-width: 600px;
+      margin: 40px auto;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      padding: 40px 30px;
+      text-align: center;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    h1 {
+      font-size: 34px;
+      margin: 0;
+      color: #241a2e;
+    }
+
+    h2 {
+      font-size: 25px;
+      margin: 10px 0 20px;
+      color: #241a2e;
+    }
+
+    p {
+      font-size: 16px;
+      opacity: 0.8;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      font-family: sans-serif;
+    }
+
+    .start-btn {
+      margin-top: 20px;
+      background: #241a2e;
+      color: #fff6e9;
+      font-size: 15px;
+      font-weight: bold;
+      padding: 14px 30px;
+      border-radius: 100px;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .start-btn:hover {
+      transform: translateY(-2px);
+      opacity: 0.9;
+    }
+
+    .options {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .opt {
+      flex: 1 1 220px;
+      background: #fff;
+      border: 2px solid #ddd;
+      border-radius: 16px;
+      padding: 22px 16px;
+      text-align: left;
+      transition: all 0.2s ease;
+    }
+
+    .opt:hover {
+      border-color: #241a2e;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .opt .opt-emoji {
+      display: block;
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    .opt .opt-label {
+      display: block;
+      font-size: 15px;
+      font-weight: bold;
+      color: #241a2e;
+    }
+
+    .qcount {
+      font-size: 12px;
+      opacity: 0.6;
+      margin-bottom: 10px;
+    }
+
+    .row {
+      display: flex;
+      gap: 16px;
+      padding: 12px 0;
+      border-top: 1px solid #ddd;
+      text-align: left;
+    }
+
+    .row:first-child {
+      border-top: none;
+    }
+
+    .time {
+      font-weight: bold;
+      width: 80px;
+      flex-shrink: 0;
+      color: #241a2e;
+    }
+
+    .again-btn {
+      margin-top: 20px;
+      background: transparent;
+      color: #241a2e;
+      border: 2px solid #241a2e;
+      padding: 10px 24px;
+      border-radius: 100px;
+      transition: all 0.2s ease;
+    }
+
+    .again-btn:hover {
+      background: #241a2e;
+      color: #fff6e9;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    @media (max-width: 500px) {
+      #app {
+        padding: 30px 20px;
+        margin: 20px auto;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      h2 {
+        font-size: 22px;
+      }
+
+      .options {
+        flex-direction: column;
+      }
+
+      .opt {
+        flex: 1 1 auto;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+
+    <!-- START SCREEN -->
+    <div id="screen-start">
+      <h1>My Perfect Day</h1>
+      <p>Answer 10 quick questions and we'll build your ideal day.</p>
+      <button class="start-btn" onclick="startQuiz()">Start</button>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="screen-quiz" hidden>
+      <div class="qcount" id="qcount"></div>
+
+      <h2 id="qtext"></h2>
+
+      <div class="options">
+
+        <button class="opt" onclick="answer('A')">
+          <span class="opt-emoji" id="emojiA"></span>
+          <span class="opt-label" id="labelA"></span>
+        </button>
+
+        <button class="opt" onclick="answer('B')">
+          <span class="opt-emoji" id="emojiB"></span>
+          <span class="opt-label" id="labelB"></span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="screen-result" hidden>
+      <h1 id="resultTitle"></h1>
+      <p id="resultTagline"></p>
+
+      <div id="resultTimeline"></div>
+
+      <button class="again-btn" onclick="restart()">
+        Design another day
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+
+    /* =========================
+       QUIZ QUESTIONS
+    ========================= */
+
+    const questions = [
+      {
+        slot: "wake",
+        text: "How does your day begin?",
+        A: {
+          emoji: "🌅",
+          label: "Up with the sunrise",
+          tag: "active"
+        },
+        B: {
+          emoji: "🌙",
+          label: "A slow, late morning",
+          tag: "calm"
+        }
+      },
+
+      {
+        slot: "drink",
+        text: "First thing in your hand?",
+        A: {
+          emoji: "☕",
+          label: "Coffee",
+          tag: "active"
+        },
+        B: {
+          emoji: "🍵",
+          label: "Tea",
+          tag: "calm"
+        }
+      },
+
+      {
+        slot: "breakfast",
+        text: "Breakfast looks like...",
+        A: {
+          emoji: "🍳",
+          label: "A big, hearty breakfast",
+          tag: "active"
+        },
+        B: {
+          emoji: "🥐",
+          label: "Something light",
+          tag: "calm"
+        }
+      },
+
+      {
+        slot: "morningAct",
+        text: "First activity of the day?",
+        A: {
+          emoji: "🏃",
+          label: "A workout to wake up",
+          tag: "active"
+        },
+        B: {
+          emoji: "📓",
+          label: "Journaling with music",
+          tag: "calm"
+        }
+      },
+
+      {
+        slot: "midday",
+        text: "Where does your midday take you?",
+        A: {
+          emoji: "🏖️",
+          label: "The beach",
+          tag: "social"
+        },
+        B: {
+          emoji: "🏔️",
+          label: "The mountains",
+          tag: "solo"
+        }
+      },
+
+      {
+        slot: "lunch",
+        text: "Lunch plans?",
+        A: {
+          emoji: "🍜",
+          label: "Trying a new spot",
+          tag: "social"
+        },
+        B: {
+          emoji: "🍝",
+          label: "Home-cooked, just for you",
+          tag: "solo"
+        }
+      },
+
+      {
+        slot: "afternoon",
+        text: "How do you spend the afternoon?",
+        A: {
+          emoji: "🥾",
+          label: "An adventurous hike",
+          tag: "active"
+        },
+        B: {
+          emoji: "🎨",
+          label: "A creative project",
+          tag: "calm"
+        }
+      },
+
+      {
+        slot: "company",
+        text: "Who's around for the evening?",
+        A: {
+          emoji: "👥",
+          label: "Friends, definitely",
+          tag: "social"
+        },
+        B: {
+          emoji: "🧘",
+          label: "Just me, and that's perfect",
+          tag: "solo"
+        }
+      },
+
+      {
+        slot: "dinner",
+        text: "Dinner is...",
+        A: {
+          emoji: "🍕",
+          label: "Out, somewhere lively",
+          tag: "social"
+        },
+        B: {
+          emoji: "🍲",
+          label: "In, cozy and quiet",
+          tag: "solo"
+        }
+      },
+
+      {
+        slot: "wind",
+        text: "How does the day wind down?",
+        A: {
+          emoji: "🎬",
+          label: "A movie",
+          tag: "calm"
+        },
+        B: {
+          emoji: "📖",
+          label: "A book",
+          tag: "calm"
+        }
+      }
+    ];
+
+
+    /* =========================
+       DAILY SCHEDULES
+    ========================= */
+
+    const schedule = {
+
+      early: {
+        wake: "6:00 AM",
+        drink: "6:30 AM",
+        breakfast: "7:15 AM",
+        morningAct: "8:00 AM",
+        midday: "12:00 PM",
+        lunch: "1:00 PM",
+        afternoon: "3:00 PM",
+        company: "6:00 PM",
+        dinner: "7:30 PM",
+        wind: "9:30 PM"
+      },
+
+      late: {
+        wake: "9:30 AM",
+        drink: "10:00 AM",
+        breakfast: "10:45 AM",
+        morningAct: "11:30 AM",
+        midday: "1:30 PM",
+        lunch: "2:30 PM",
+        afternoon: "4:30 PM",
+        company: "7:30 PM",
+        dinner: "9:00 PM",
+        wind: "11:00 PM"
+      }
+
+    };
+
+
+    /* =========================
+       BACKGROUND SCENES
+    ========================= */
+
+    const scenes = {
+
+      dawn: "#89c2ee",
+
+      noon: "#6fb7e9",
+
+      dusk: "#e9a66b",
+
+      night: "#241a2e"
+
+    };
+
+
+    /* =========================
+       PERSONALITY TITLES
+    ========================= */
+
+    const titles = [
+
+      {
+        min: 8,
+        title: "The Sunrise Adventurer",
+        tag: "Always moving, always outside."
+      },
+
+      {
+        min: 5,
+        title: "The Golden Hour Wanderer",
+        tag: "A little bit of everything, in balance."
+      },
+
+      {
+        min: 0,
+        title: "The Cozy Night Owl",
+        tag: "Slow mornings, quiet evenings."
+      }
+
+    ];
+
+
+    /* =========================
+       QUIZ STATE
+    ========================= */
+
+    let current = 0;
+    let answers = {};
+    let energyScore = 0;
+
+
+    /* =========================
+       BACKGROUND
+    ========================= */
+
+    function applyScene(sceneName) {
+
+      if (scenes[sceneName]) {
+        document.body.style.background = scenes[sceneName];
+      }
+
+    }
+
+
+    /* =========================
+       START QUIZ
+    ========================= */
+
+    function startQuiz() {
+
+      document.getElementById("screen-start").hidden = true;
+      document.getElementById("screen-result").hidden = true;
+      document.getElementById("screen-quiz").hidden = false;
+
+      current = 0;
+      answers = {};
+      energyScore = 0;
+
+      applyScene("dawn");
+
+      showQuestion();
+
+    }
+
+
+    /* =========================
+       SHOW QUESTION
+    ========================= */
+
+    function showQuestion() {
+
+      const q = questions[current];
+
+      document.getElementById("qcount").textContent =
+        "Question " + (current + 1) + " of " + questions.length;
+
+      document.getElementById("qtext").textContent = q.text;
+
+      document.getElementById("emojiA").textContent = q.A.emoji;
+      document.getElementById("labelA").textContent = q.A.label;
+
+      document.getElementById("emojiB").textContent = q.B.emoji;
+      document.getElementById("labelB").textContent = q.B.label;
+
+      updateBackground();
+
+    }
+
+
+    /* =========================
+       ANSWER QUESTION
+    ========================= */
+
+    function answer(choice) {
+
+      const q = questions[current];
+      const picked = q[choice];
+
+      answers[q.slot] = picked;
+
+      if (
+        picked.tag === "active" ||
+        picked.tag === "social"
+      ) {
+        energyScore++;
+      }
+
+      current++;
+
+      if (current < questions.length) {
+
+        showQuestion();
+
+      } else {
+
+        showResult();
+
+      }
+
+    }
+
+
+    /* =========================
+       UPDATE BACKGROUND
+    ========================= */
+
+    function updateBackground() {
+
+      const progress = current / questions.length;
+
+      let sceneName;
+
+      if (progress < 0.25) {
+
+        sceneName = "dawn";
+
+      } else if (progress < 0.5) {
+
+        sceneName = "noon";
+
+      } else if (progress < 0.75) {
+
+        sceneName = "dusk";
+
+      } else {
+
+        sceneName = "night";
+
+      }
+
+      applyScene(sceneName);
+
+    }
+
+
+    /* =========================
+       SHOW RESULT
+    ========================= */
+
+    function showResult() {
+
+      document.getElementById("screen-quiz").hidden = true;
+      document.getElementById("screen-result").hidden = false;
+
+      applyScene("night");
+
+      const track =
+        answers.wake.tag === "active"
+          ? "early"
+          : "late";
+
+      const times = schedule[track];
+
+
+      const rows = [
+
+        ["wake", answers.wake.label],
+
+        ["drink", answers.drink.label],
+
+        ["breakfast", answers.breakfast.label],
+
+        ["morningAct", answers.morningAct.label],
+
+        [
+          "midday",
+          "Afternoon at " +
+          answers.midday.label.toLowerCase()
+        ],
+
+        ["lunch", answers.lunch.label],
+
+        ["afternoon", answers.afternoon.label],
+
+        ["company", answers.company.label],
+
+        ["dinner", answers.dinner.label],
+
+        [
+          "wind",
+          "Wind down with " +
+          answers.wind.label.toLowerCase()
+        ]
+
+      ];
+
+
+      let timelineHTML = "";
+
+
+      for (let i = 0; i < rows.length; i++) {
+
+        const slot = rows[i][0];
+        const label = rows[i][1];
+
+        timelineHTML += `
+          <div class="row">
+            <div class="time">${times[slot]}</div>
+            <div>${label}</div>
+          </div>
+        `;
+
+      }
+
+
+      document.getElementById("resultTimeline").innerHTML =
+        timelineHTML;
+
+
+      const result = titles.find(
+        title => energyScore >= title.min
+      );
+
+
+      document.getElementById("resultTitle").textContent =
+        result.title;
+
+      document.getElementById("resultTagline").textContent =
+        result.tag;
+
+    }
+
+
+    /* =========================
+       RESTART
+    ========================= */
+
+    function restart() {
+
+      document.getElementById("screen-result").hidden = true;
+      document.getElementById("screen-start").hidden = false;
+
+      current = 0;
+      answers = {};
+      energyScore = 0;
+
+      applyScene("dawn");
+
+    }
+
+
+    /* =========================
+       INITIAL BACKGROUND
+    ========================= */
+
+    applyScene("dawn");
+
+  </script>
+
+</body>
+</html>
